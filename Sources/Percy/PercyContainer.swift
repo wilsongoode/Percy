@@ -28,19 +28,14 @@ public actor Percy {
     /// }
     /// ```
     ///
-    /// 2. Initialize Percy in your app's main entry point:
+    /// 2. To initialize Percy in your app's main entry point, use the ``withPercy`` view modifier:
     /// ```swift
     /// @main
     /// struct YourApp: App {
-    ///     @StateObject private var percy = Percy.Container(configuration: AppStorage.self)
-    ///
     ///     var body: some Scene {
     ///         WindowGroup {
     ///             ContentView()
-    ///                 .task {
-    ///                     try? await percy.setup()
-    ///                 }
-    ///                 .modelContainer(percy.container)
+    ///                 .withPercy(configuration: AppStorage.self)
     ///         }
     ///     }
     /// }
