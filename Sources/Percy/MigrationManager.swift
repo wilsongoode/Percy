@@ -5,6 +5,8 @@
 //  Created by Wilson Goode on 5/4/25.
 //
 
+import OSLog
+import SwiftData
 
 actor MigrationManager {
     private let logger: Logger

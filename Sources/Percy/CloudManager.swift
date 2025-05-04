@@ -5,6 +5,9 @@
 //  Created by Wilson Goode on 5/4/25.
 //
 
+import OSLog
+import CloudKit
+import SwiftData
 
 actor CloudManager {
     private let logger: Logger
