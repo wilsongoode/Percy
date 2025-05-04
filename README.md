@@ -4,8 +4,13 @@ Percy is a library that makes setting up a SwiftData container more convenient w
 
 ## Setup
 
+Add Percy as a dependency in your `Package.swift`:
 ```swift
-// in your app
+.package(url: "https://github.com/wilsongoode/Percy", branch: "main"),
+```
+
+In your app's main entry point, import Percy:
+```swift
 import Percy
 ```
 
