@@ -18,6 +18,7 @@ actor BackupManager {
         self.logger = Logger(subsystem: identifier, category: "Percy.Backup")
     }
     
+    /// Creates a backup of the current store.
     func backup() async throws {
         guard FileManager.default.fileExists(atPath: storeURL.path) else { return }
         
@@ -39,6 +40,7 @@ actor BackupManager {
         }
     }
     
+    /// Restores the backup to the current store.
     func restore() async throws {
         guard FileManager.default.fileExists(atPath: backupURL.path) else {
             throw PercyError.restoreFailed(NSError(domain: "No backup found", code: -1))

@@ -8,6 +8,7 @@
 import OSLog
 import CloudKit
 import SwiftData
+import CoreData
 
 actor CloudManager {
     private let logger: Logger
@@ -18,6 +19,7 @@ actor CloudManager {
         self.container = CKContainer(identifier: identifier)
     }
     
+    /// Checks if CloudKit is available
     func checkAvailability() async -> Bool {
         do {
             let accountStatus = try await container.accountStatus()
@@ -28,7 +30,41 @@ actor CloudManager {
         }
     }
     
-    func initializeSchema(for schema: Schema) async throws {
-        // Implementation
+    /// Initializes the CloudKit schema for the provided configuration. Only runs in DEBUG mode.
+    ///
+    /// This function is described in Apple's documentation: [SwiftData: Syncing Model Data Across a Person's Devices](https://developer.apple.com/documentation/swiftdata/syncing-model-data-across-a-persons-devices)
+    func initializeSchema(for configuration: any PercyConfiguration.Type, storeURL: URL) async throws {
+#if DEBUG
+        guard let iCloudContainer = configuration.iCloudContainer else {
+            logger.debug("No iCloud container configured")
+            return
+        }
+        // Use an autorelease pool to make sure Swift deallocates the persistent
+        // container before setting up the SwiftData stack.
+        try autoreleasepool {
+            let desc = NSPersistentStoreDescription(url: storeURL)
+            let opts = NSPersistentCloudKitContainerOptions(containerIdentifier: iCloudContainer)
+            desc.cloudKitContainerOptions = opts
+            // Load the store synchronously so it completes before initializing the
+            // CloudKit schema.
+            desc.shouldAddStoreAsynchronously = false
+            if let mom = NSManagedObjectModel.makeManagedObjectModel(for: configuration.versionedSchema.models) {
+                let container = NSPersistentCloudKitContainer(name: configuration.name, managedObjectModel: mom)
+                container.persistentStoreDescriptions = [desc]
+                container.loadPersistentStores {_, err in
+                    if let err {
+                        print("\(err)")
+                        fatalError(err.localizedDescription)
+                    }
+                }
+                // Initialize the CloudKit schema after the store finishes loading.
+                try container.initializeCloudKitSchema()
+                // Remove and unload the store from the persistent container.
+                if let store = container.persistentStoreCoordinator.persistentStores.first {
+                    try container.persistentStoreCoordinator.remove(store)
+                }
+            }
+        }
+#endif
     }
 }

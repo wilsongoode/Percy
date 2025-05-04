@@ -22,8 +22,9 @@ public actor Percy {
     /// ```swift
     /// struct AppStorage: PercyConfiguration {
     ///     static let identifier = "com.yourapp.id"
+    ///     static let iCloudContainer = "iCloud.com.yourapp.id"
     ///     static let name = "YourApp"
-    ///     static let schema = AppSchema.self
+    ///     static let versionedSchema = AppVersionedSchema.self
     ///     static let migrationPlan = AppMigrationPlan.self
     /// }
     /// ```
@@ -126,7 +127,7 @@ public actor Percy {
                 
                 // Initialize CloudKit if available
                 if cloudAvailable {
-                    try await cloud.initializeSchema(for: modelContainer.schema)
+                    try await cloud.initializeSchema(for: configuration, storeURL: storeURL)
                 }
                 
                 self.container = modelContainer
