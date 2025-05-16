@@ -15,6 +15,16 @@ public extension ForwardMigrationPlan {
     
     static func validateMigrationStages() -> Bool {
         stages.allSatisfy { stage in
+            switch stage {
+            case .lightweight(let fromVersion, let toVersion):
+                print("Lightweight migration from \(fromVersion) to \(toVersion)")
+                return true
+            case .custom(let fromVersion, let toVersion, let willMigrate, let didMigrate):
+                print("Custom migration from \(fromVersion) to \(toVersion)")
+                return true
+            @unknown default:
+                fatalError()
+            }
 //            guard case .custom(let from, let to, _, _) = stage else {
 //                assertionFailure("All stages must be custom for forward migrations")
 //                return false
@@ -27,7 +37,7 @@ public extension ForwardMigrationPlan {
 //                return false
 //            }
             
-            return true
+//            return true
         }
     }
 }

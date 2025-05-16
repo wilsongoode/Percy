@@ -26,6 +26,7 @@ public extension RollbackMigrationPlan {
                 assertionFailure("Rollback migration must go from a later version to an earlier version")
                 return false
             }
+            print("Rollback custom migration from \(from) to \(to)")
             
             return true
         }
