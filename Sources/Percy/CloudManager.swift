@@ -12,15 +12,26 @@ import CoreData
 
 actor CloudManager {
     private let logger: Logger
-    private let container: CKContainer
+    private let container: CKContainer?
     
-    init(identifier: String) {
+    init(
+        identifier: String,
+        containerIdentifier: String?
+    ) {
         self.logger = Logger(subsystem: identifier, category: "Percy.Cloud")
-        self.container = CKContainer(identifier: identifier)
+        if let containerIdentifier {
+            self.container = CKContainer(identifier: containerIdentifier)
+        } else {
+            self.container = nil
+        }
     }
     
     /// Checks if CloudKit is available
     func checkAvailability() async -> Bool {
+        guard let container else {
+            logger.debug("No iCloud container configured")
+            return false
+        }
         do {
             let accountStatus = try await container.accountStatus()
             return accountStatus == .available

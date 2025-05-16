@@ -14,7 +14,7 @@ actor BackupManager {
     
     init(storeURL: URL, identifier: String) {
         self.storeURL = storeURL
-        self.backupURL = URL.documentsDirectory.appending(path: "percy/backup.store")
+        self.backupURL = storeURL.deletingLastPathComponent().appending(path: "percy/backup.store")
         self.logger = Logger(subsystem: identifier, category: "Percy.Backup")
     }
     
@@ -33,7 +33,7 @@ actor BackupManager {
             }
             
             try FileManager.default.copyItem(at: storeURL, to: backupURL)
-            logger.debug("Backup created successfully")
+            logger.debug("Backup created successfully at \(self.backupURL)")
         } catch {
             logger.error("Backup failed: \(error)")
             throw PercyError.backupFailed(error)

@@ -11,6 +11,7 @@ public enum PercyError: Error {
     case backupFailed(Error)
     case restoreFailed(Error)
     case migrationFailed(Error)
+    case invalidMigrationPlan
     case cloudSyncFailed(Error)
     case notImplemented
 }

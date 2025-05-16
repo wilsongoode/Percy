@@ -20,15 +20,15 @@ public extension View {
         configuration: Config.Type,
         storeURL: URL? = nil
     ) -> some View {
-        modifier(PercyViewModifier(configuration: configuration, storeURL: storeURL))
+        modifier(PercyViewModifier(configuration: configuration, storeDirectory: storeURL))
     }
 }
 
 private struct PercyViewModifier: ViewModifier {
     @State private var percy: Percy.Container
     
-    init<Config: PercyConfiguration>(configuration: Config.Type, storeURL: URL? = nil) {
-        _percy = State(wrappedValue: Percy.Container(configuration: configuration, storeURL: storeURL))
+    init<Config: PercyConfiguration>(configuration: Config.Type, storeDirectory: URL? = nil) {
+        _percy = State(wrappedValue: try! Percy.Container(configuration: configuration, storeDirectory: storeDirectory))
     }
     
     private var activeContainer: ModelContainer {

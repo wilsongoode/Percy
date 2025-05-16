@@ -22,11 +22,17 @@ public protocol PercyConfiguration {
     static var versionedSchema: any VersionedSchema.Type { get }
     
     /// The app's schema migration plan.
-    static var migrationPlan: any SchemaMigrationPlan.Type { get }
+    static var migrationPlan: any PercyMigrationPlan.Type { get }
 }
 
 public extension PercyConfiguration {
     static var schema: Schema {
         Schema(versionedSchema: versionedSchema)
+    }
+    
+    static func validate() throws {
+        guard migrationPlan.validateMigrationStages() else {
+            throw PercyError.invalidMigrationPlan
+        }
     }
 }

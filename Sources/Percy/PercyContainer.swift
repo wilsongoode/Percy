@@ -76,20 +76,27 @@ public actor Percy {
         ///
         /// - Parameters:
         ///   - configuration: The type conforming to ``PercyConfiguration`` that defines your app's storage settings.
-        ///   - storeURL: Optional custom URL for the store file. If not provided, defaults to "percy.store" in the Documents directory.
+        ///   - storeDirectory: Optional custom directory for the store file and related files. If not provided, defaults to Documents/PercyStore.
         ///
         /// - Note: After creating the container, you must call ``setup(rollback:)`` before using it.
         public init<Config: PercyConfiguration>(
             configuration: Config.Type,
-            storeURL: URL? = nil
-        ) {
+            storeDirectory: URL? = nil
+        ) throws {
+            try configuration.validate()
             self.configuration = configuration
             self.logger = Logger(subsystem: configuration.identifier, category: "Percy")
-            self.storeURL = storeURL ?? URL.documentsDirectory.appending(path: "percy.store")
-            
+            self.logger.debug("Store directory: \(storeDirectory?.absoluteString ?? "nil")")
+            if let storeDirectory, storeDirectory.hasDirectoryPath {
+                try? FileManager.default.createDirectory(at: storeDirectory, withIntermediateDirectories: true, attributes: nil)
+                self.storeURL = storeDirectory.appending(path: "percy.store")
+            } else {
+                self.storeURL = URL.documentsDirectory.appending(path: "PercyStore").appending(path: "percy.store")
+            }
+            self.logger.debug("Store URL: \(self.storeURL)")
             // Initialize components
             self.backup = BackupManager(storeURL: self.storeURL, identifier: configuration.identifier)
-            self.cloud = CloudManager(identifier: configuration.identifier)
+            self.cloud = CloudManager(identifier: configuration.identifier, containerIdentifier: configuration.iCloudContainer)
             self.migration = MigrationManager(identifier: configuration.identifier)
             self.analytics = Analytics(identifier: configuration.identifier)
         }
@@ -118,17 +125,18 @@ public actor Percy {
                 // Check CloudKit availability
                 let cloudAvailable = await cloud.checkAvailability()
                 
-                // Setup container
-                let modelContainer = try setupModelContainer(
-                    for: configuration.schema,
-                    url: storeURL,
-                    rollback: rollback
-                )
-                
                 // Initialize CloudKit if available
                 if cloudAvailable {
                     try await cloud.initializeSchema(for: configuration, storeURL: storeURL)
                 }
+                
+                // Setup container
+                let modelContainer = try setupModelContainer(
+                    for: configuration.versionedSchema,
+                    url: storeURL,
+                    enableCloudKit: cloudAvailable,
+                    rollback: rollback
+                )
                 
                 self.container = modelContainer
             } catch {
@@ -147,19 +155,24 @@ public actor Percy {
         /// - Returns: A configured `ModelContainer` instance.
         /// - Throws: ``PercyError/setupFailed`` if the container setup fails.
         private func setupModelContainer(
-            for schema: Schema,
+            for schema: any VersionedSchema.Type,
             url: URL,
+            enableCloudKit: Bool = false,
             rollback: Bool
         ) throws -> ModelContainer {
             do {
-                let configuration = ModelConfiguration(
+                logger.debug("Setting up model container for schema v\(schema.versionIdentifier)")
+                let modelConfiguration = ModelConfiguration(
+                    schema: Schema(versionedSchema: schema),
                     url: url,
-                    allowsSave: true
+                    allowsSave: true,
+                    cloudKitDatabase: enableCloudKit ? .automatic : .none
                 )
                 
                 let container = try ModelContainer(
-                    for: schema,
-                    configurations: [configuration]
+                    for: Schema(versionedSchema: schema),
+                    migrationPlan: configuration.migrationPlan,
+                    configurations: [modelConfiguration]
                 )
                 
                 logger.debug("Model container setup successfully")
@@ -170,6 +183,20 @@ public actor Percy {
                 if rollback {
                     logger.info("Attempting rollback...")
                     // Implement rollback logic here
+                    if let nextSchema = configuration.migrationPlan.schemas.last(where: {
+                        $0.versionIdentifier < schema.versionIdentifier
+                    }) {
+                        logger.info("Rolling back to schema v\(nextSchema.versionIdentifier)\(enableCloudKit ? ", without CloudKit" : "")")
+                        let container = try setupModelContainer(
+                            for: nextSchema,
+                            url: url,
+                            enableCloudKit: false,
+                            rollback: rollback
+                        )
+                        
+                        logger.info("Rollback successful")
+                        return container
+                    }
                 }
                 
                 throw PercyError.setupFailed(error)
