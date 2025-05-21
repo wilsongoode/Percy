@@ -12,7 +12,7 @@ import Foundation
         static var iCloudContainer: String? { nil }
         static var name: String { "percy-swift-example" }
         static var versionedSchema: any VersionedSchema.Type { TestSchemaV1.self }
-        static var migrationPlan: any PercyMigrationPlan.Type { TestMigrationPlan.self }
+        static var migrationPlan: any PercyMigrationPlan.Type { TestForwardMigrationPlan.self }
     }
     
     struct ConfigV2Local: PercyConfiguration {
@@ -20,7 +20,7 @@ import Foundation
         static var iCloudContainer: String? { nil }
         static var name: String { "percy-swift-example" }
         static var versionedSchema: any VersionedSchema.Type { TestSchemaV2.self }
-        static var migrationPlan: any PercyMigrationPlan.Type { TestMigrationPlan.self }
+        static var migrationPlan: any PercyMigrationPlan.Type { TestForwardMigrationPlan.self }
     }
     
     struct RollbackConfigV1Local: PercyConfiguration {
@@ -28,7 +28,7 @@ import Foundation
         static var iCloudContainer: String? { nil }
         static var name: String { "percy-swift-example" }
         static var versionedSchema: any VersionedSchema.Type { TestSchemaV1.self }
-        static var migrationPlan: any PercyMigrationPlan.Type { TestRollbackMigrationPlan.self }
+        static var migrationPlan: any PercyMigrationPlan.Type { TestBackwardMigrationPlan.self }
     }
     
     func cleanupDirectory() {

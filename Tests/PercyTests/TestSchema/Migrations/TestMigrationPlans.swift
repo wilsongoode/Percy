@@ -1,5 +1,5 @@
 //
-//  TestMigrationPlan.swift
+//  TestMigrationPlans.swift
 //  Percy
 //
 //  Created by Wilson Goode on 5/14/25.
@@ -8,7 +8,7 @@
 import SwiftData
 import Percy
 
-enum TestMigrationPlan: ForwardMigrationPlan {
+enum TestForwardMigrationPlan: ForwardMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
         [
             TestSchemaV1.self,
@@ -30,8 +30,8 @@ enum TestMigrationPlan: ForwardMigrationPlan {
     }
 }
 
-// Rollback migrations cannot be comingled with forward migrations in a single migration plan
-enum TestRollbackMigrationPlan: RollbackMigrationPlan {
+// Backward migrations cannot be comingled with forward migrations in a single migration plan
+enum TestBackwardMigrationPlan: BackwardMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
         [
             TestSchemaV1.self,
@@ -45,7 +45,7 @@ enum TestRollbackMigrationPlan: RollbackMigrationPlan {
         ]
     }
     
-    // Rollback stages don't work as MigrationStage.lightweight, so they must be .custom, even if simple
+    // Backward migration stages don't work as MigrationStage.lightweight, so they must be .custom, even if simple
     static var rollbackV2toV1: MigrationStage {
         .custom(
             fromVersion: TestSchemaV2.self,
