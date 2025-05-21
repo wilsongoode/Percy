@@ -18,20 +18,47 @@ public extension RollbackMigrationPlan {
     
     static func validateMigrationStages(_ configuration: any PercyConfiguration.Type) -> Bool {
         logger.info("Validating rollback migration stages for \(configuration.identifier)")
+        
+        guard !stages.isEmpty else {
+            logger.notice("No rollback migration stages defined for \(configuration.identifier)")
+            return true
+        }
+        
+        // Track versions to detect duplicates and validate order
+        var seenVersions: [any VersionedSchema.Type] = []
+        var previousToVersion: (any VersionedSchema.Type)?
+        
         return stages.allSatisfy { stage in
-            guard case .custom(let from, let to, _, _) = stage else {
-                assertionFailure("All stages must be custom for rollback migrations")
+            guard case .custom(let fromVersion, let toVersion, _, _) = stage else {
+                logger.error("All stages must be custom for rollback migrations")
                 return false
             }
             
-            guard let fromIndex = schemas.firstIndex(where: { $0 == from }),
-                  let toIndex = schemas.firstIndex(where: { $0 == to }),
+            logger.debug("Validating rollback migration from \(fromVersion.versionString()) to \(toVersion.versionString())")
+            
+            // Validate version order
+            if let previousVersion = previousToVersion, previousVersion != fromVersion {
+                logger.error("Invalid migration chain: previous version \(previousVersion.versionString()) doesn't match current fromVersion \(fromVersion.versionString())")
+                return false
+            }
+            
+            // Check for duplicate versions
+            if seenVersions.contains(where: { $0 == fromVersion }) || seenVersions.contains(where: { $0 == toVersion }) {
+                logger.error("Duplicate version detected in migration chain: from \(fromVersion.versionString()) to \(toVersion.versionString())")
+                return false
+            }
+            
+            // Ensure backward progression using array indices
+            guard let fromIndex = schemas.firstIndex(where: { $0 == fromVersion }),
+                  let toIndex = schemas.firstIndex(where: { $0 == toVersion }),
                   fromIndex > toIndex else {
-                assertionFailure("Rollback migration must go from a later version to an earlier version")
+                logger.error("Rollback migration must go from a later version to an earlier version")
                 return false
             }
-            print("Rollback custom migration from \(from) to \(to)")
             
+            seenVersions.append(fromVersion)
+            seenVersions.append(toVersion)
+            previousToVersion = toVersion
             return true
         }
     }
