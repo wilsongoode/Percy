@@ -10,7 +10,7 @@ import SwiftData
 
 public protocol PercyMigrationPlan: SchemaMigrationPlan {
     static var direction: MigrationDirection { get }
-    static func validateMigrationStages() -> Bool
+    static func validateMigrationStages(_ configuration: any PercyConfiguration.Type) -> Bool
 }
 
 public enum MigrationDirection {

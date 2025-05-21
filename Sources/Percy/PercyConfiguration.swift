@@ -6,6 +6,7 @@
 //
 
 import SwiftData
+import OSLog
 
 /// A protocol that defines your app's storage settings.
 public protocol PercyConfiguration {
@@ -26,13 +27,17 @@ public protocol PercyConfiguration {
 }
 
 public extension PercyConfiguration {
+    static var logger: Logger { Logger(subsystem: Constants.bundleIdentifier, category: "PercyConfiguration") }
+    
     static var schema: Schema {
         Schema(versionedSchema: versionedSchema)
     }
     
     static func validate() throws {
-        guard migrationPlan.validateMigrationStages() else {
+        logger.info("Validating configuration for \(identifier)")
+        guard migrationPlan.validateMigrationStages(self) else {
             throw PercyError.invalidMigrationPlan
         }
+        logger.info("Configuration for \(identifier) is valid")
     }
 }
