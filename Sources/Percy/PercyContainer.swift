@@ -141,7 +141,7 @@ public actor Percy {
                 self.container = modelContainer
             } catch {
                 logger.fault("Failed to setup container: \(error)")
-                throw PercyError.setupFailed(error)
+                throw PercyError.setupFailed("\(error)")
             }
         }
         
@@ -199,7 +199,7 @@ public actor Percy {
                     }
                 }
                 
-                throw PercyError.setupFailed(error)
+                throw PercyError.setupFailed("\(error)")
             }
         }
     }

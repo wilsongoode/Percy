@@ -36,14 +36,14 @@ actor BackupManager {
             logger.debug("Backup created successfully at \(self.backupURL)")
         } catch {
             logger.error("Backup failed: \(error)")
-            throw PercyError.backupFailed(error)
+            throw PercyError.backupFailed("\(error)")
         }
     }
     
     /// Restores the backup to the current store.
     func restore() async throws {
         guard FileManager.default.fileExists(atPath: backupURL.path) else {
-            throw PercyError.restoreFailed(NSError(domain: "No backup found", code: -1))
+            throw PercyError.restoreFailed("No backup found")
         }
         
         do {
@@ -54,7 +54,7 @@ actor BackupManager {
             logger.debug("Restore completed successfully")
         } catch {
             logger.error("Restore failed: \(error)")
-            throw PercyError.restoreFailed(error)
+            throw PercyError.restoreFailed("\(error)")
         }
     }
 }

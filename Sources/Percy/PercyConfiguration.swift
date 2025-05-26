@@ -38,6 +38,9 @@ public extension PercyConfiguration {
         guard migrationPlan.validateMigrationStages(self) else {
             throw PercyError.invalidMigrationPlan
         }
+        guard migrationPlan.validateSchemas(self) else {
+            throw PercyError.invalidSchema
+        }
         logger.info("Configuration for \(identifier) is valid")
     }
 }

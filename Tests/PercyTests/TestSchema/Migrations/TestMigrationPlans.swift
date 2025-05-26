@@ -55,3 +55,25 @@ enum TestBackwardMigrationPlan: BackwardMigrationPlan {
         )
     }
 }
+
+enum TestFailingForwardMigrationPlan: ForwardMigrationPlan {
+    static var schemas: [any VersionedSchema.Type] {
+        [
+            TestFailingSchemaV1.self,
+            TestFailingSchemaV2.self,
+        ]
+    }
+    
+    static var stages: [MigrationStage] {
+        [
+            migrateV1toV2,
+        ]
+    }
+    
+    static var migrateV1toV2: MigrationStage {
+        .lightweight(
+            fromVersion: TestFailingSchemaV1.self,
+            toVersion: TestFailingSchemaV2.self
+        )
+    }
+}

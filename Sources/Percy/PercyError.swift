@@ -5,13 +5,15 @@
 //  Created by Wilson Goode on 5/4/25.
 //
 
+import Foundation
 
-public enum PercyError: Error {
-    case setupFailed(Error)
-    case backupFailed(Error)
-    case restoreFailed(Error)
-    case migrationFailed(Error)
+public enum PercyError: LocalizedError, Equatable {
+    case setupFailed(String)
+    case backupFailed(String)
+    case restoreFailed(String)
+    case migrationFailed(String)
     case invalidMigrationPlan
-    case cloudSyncFailed(Error)
+    case invalidSchema
+    case cloudSyncFailed(String)
     case notImplemented
 }

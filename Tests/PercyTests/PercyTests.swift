@@ -31,6 +31,22 @@ import Foundation
         static var migrationPlan: any PercyMigrationPlan.Type { TestBackwardMigrationPlan.self }
     }
     
+    struct FailingConfigSchemaNotInMigration: PercyConfiguration {
+        static var identifier: String { "com.example.percy-swift" }
+        static var iCloudContainer: String? { nil }
+        static var name: String { "percy-swift-example" }
+        static var versionedSchema: any VersionedSchema.Type { TestFailingSchemaV1.self }
+        static var migrationPlan: any PercyMigrationPlan.Type { TestForwardMigrationPlan.self }
+    }
+    
+    struct FailingConfigSchemaNotValidForCloudKit: PercyConfiguration {
+        static var identifier: String { "com.example.percy-swift" }
+        static var iCloudContainer: String? { "iCloud.com.example.percy-swift" }
+        static var name: String { "percy-swift-example" }
+        static var versionedSchema: any VersionedSchema.Type { TestFailingSchemaV1.self }
+        static var migrationPlan: any PercyMigrationPlan.Type { TestFailingForwardMigrationPlan.self }
+    }
+    
     func cleanupDirectory() {
         if FileManager.default.fileExists(atPath: testStoreDirectory.path()) {
             print("Removing directory: \(testStoreDirectory)")
@@ -284,5 +300,18 @@ import Foundation
             try contextV1Rollback.save()
         }()
     }
+    
+    @Test func schemaNotInMigration() async throws {
+        let error = await #expect(throws: PercyError.self) {
+            let _ = try await Percy.Container(configuration: FailingConfigSchemaNotInMigration.self, storeDirectory: self.testStoreDirectory)
+        }
+        #expect(error == .invalidSchema)
+    }
 
+    @Test func schemaNotValidForCloudKit() async throws {
+        let error = await #expect(throws: PercyError.self) {
+            let _ = try await Percy.Container(configuration: FailingConfigSchemaNotValidForCloudKit.self, storeDirectory: self.testStoreDirectory)
+        }
+        #expect(error == .invalidSchema)
+    }
 }
