@@ -115,3 +115,10 @@ Percy tries to help you avoid common issues with CloudKit and SwiftData, and wil
 
 - All migration stages go from a higher schema version to a lower schema version.
 - All stages must be ``MigrationStage.custom`` stages for a backward migration. Even if there is nothing special happening in the stage, you must still use ``MigrationStage.custom``.
+
+### Validating Schemas for CloudKit
+
+- No unique constraints are allowed.
+- All properties have a default value or are optional.
+- All relationships are optional.
+- "Deny" delete rules are not allowed.
