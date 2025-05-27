@@ -12,7 +12,7 @@ import Foundation
 
 @Suite(.serialized) final class SchemaValidationTests {
     
-    private let testStoreDirectory: URL = URL.temporaryDirectory.appending(path: "percy-swift-tests", directoryHint: .isDirectory)
+    private let testStoreDirectory: URL = URL.temporaryDirectory.appending(path: "percy-swift-tests/schema-validation", directoryHint: .isDirectory)
     
     func cleanupDirectory() {
         if FileManager.default.fileExists(atPath: testStoreDirectory.path()) {

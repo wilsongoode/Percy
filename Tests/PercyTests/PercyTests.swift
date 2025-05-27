@@ -31,7 +31,13 @@ import Foundation
         static var migrationPlan: any PercyMigrationPlan.Type { TestBackwardMigrationPlan.self }
     }
     
-
+    struct ConfigV3Local: PercyConfiguration {
+        static var identifier: String { "com.example.percy-swift" }
+        static var iCloudContainer: String? { nil }
+        static var name: String { "percy-swift-example" }
+        static var versionedSchema: any VersionedSchema.Type { TestSchemaV3.self }
+        static var migrationPlan: any PercyMigrationPlan.Type { TestForwardMigrationPlan.self }
+    }
     
     func cleanupDirectory() {
         if FileManager.default.fileExists(atPath: testStoreDirectory.path()) {

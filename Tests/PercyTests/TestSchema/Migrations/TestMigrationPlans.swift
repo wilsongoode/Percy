@@ -13,12 +13,14 @@ enum TestForwardMigrationPlan: ForwardMigrationPlan {
         [
             TestSchemaV1.self,
             TestSchemaV2.self,
+            TestSchemaV3.self,
         ]
     }
     
     static var stages: [MigrationStage] {
         [
             migrateV1toV2,
+            migrateV2toV3,
         ]
     }
     
@@ -26,6 +28,13 @@ enum TestForwardMigrationPlan: ForwardMigrationPlan {
         .lightweight(
             fromVersion: TestSchemaV1.self,
             toVersion: TestSchemaV2.self
+        )
+    }
+    
+    static var migrateV2toV3: MigrationStage {
+        .lightweight(
+            fromVersion: TestSchemaV2.self,
+            toVersion: TestSchemaV3.self
         )
     }
 }
@@ -36,11 +45,13 @@ enum TestBackwardMigrationPlan: BackwardMigrationPlan {
         [
             TestSchemaV1.self,
             TestSchemaV2.self,
+            TestSchemaV3.self,
         ]
     }
     
     static var stages: [MigrationStage] {
         [
+            rollbackV3toV2,
             rollbackV2toV1,
         ]
     }
@@ -50,6 +61,15 @@ enum TestBackwardMigrationPlan: BackwardMigrationPlan {
         .custom(
             fromVersion: TestSchemaV2.self,
             toVersion: TestSchemaV1.self,
+            willMigrate: nil,
+            didMigrate: nil
+        )
+    }
+    
+    static var rollbackV3toV2: MigrationStage {
+        .custom(
+            fromVersion: TestSchemaV3.self,
+            toVersion: TestSchemaV2.self,
             willMigrate: nil,
             didMigrate: nil
         )
