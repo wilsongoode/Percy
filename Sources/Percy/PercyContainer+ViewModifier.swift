@@ -26,27 +26,34 @@ public extension View {
 
 private struct PercyViewModifier: ViewModifier {
     @State private var percy: Percy.Container
+    @State private var setupError: Error?
     
     init<Config: PercyConfiguration>(configuration: Config.Type, storeDirectory: URL? = nil) {
         _percy = State(wrappedValue: try! Percy.Container(configuration: configuration, storeDirectory: storeDirectory))
     }
     
-    private var activeContainer: ModelContainer {
-        if let container = percy.container {
-            return container
-        }
-        // Fallback to a new container if percy.container is nil
-        guard let container = try? ModelContainer(for: percy.configuration.schema) else {
-            fatalError("Failed to create fallback container")
-        }
-        return container
-    }
-    
     func body(content: Content) -> some View {
-        content
-            .task {
-                try? await percy.setup()
+        Group {
+            if let container = percy.container {
+                content
+                    .modelContainer(container)
+            } else if let error = setupError {
+                ContentUnavailableView(
+                    "Database Error",
+                    systemImage: "exclamationmark.triangle",
+                    description: Text(error.localizedDescription)
+                )
+            } else {
+                ProgressView()
             }
-            .modelContainer(activeContainer)
+        }
+        .task {
+            guard percy.container == nil else { return }
+            do {
+                try await percy.setup()
+            } catch {
+                setupError = error
+            }
+        }
     }
 }
