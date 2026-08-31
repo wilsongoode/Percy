@@ -10,7 +10,7 @@ import OSLog
 
 public actor Percy {
     
-    public static let defaultStoreURL: URL = URL.documentsDirectory.appending(path: "PercyStore").appending(path: "percy.store")
+    nonisolated public static let defaultStoreURL: URL = URL.documentsDirectory.appending(path: "PercyStore").appending(path: "percy.store")
     
     /// A container that manages the persistence, backup, cloud sync, and migration of your SwiftData models.
     ///
