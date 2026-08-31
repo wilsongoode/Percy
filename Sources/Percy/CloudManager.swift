@@ -34,7 +34,23 @@ actor CloudManager {
         }
         do {
             let accountStatus = try await container.accountStatus()
-            return accountStatus == .available
+            logger.debug("CloudKit account status: \(String(describing: accountStatus))")
+            switch accountStatus {
+            case .available, .temporarilyUnavailable:
+                return true
+            case .noAccount:
+                logger.debug("CloudKit unavailable: No iCloud account")
+                return false
+            case .restricted:
+                logger.debug("CloudKit unavailable: Account restricted")
+                return false
+            case .couldNotDetermine:
+                logger.debug("CloudKit unavailable: Could not determine status")
+                return false
+            @unknown default:
+                logger.debug("CloudKit unavailable: Unknown status (\(accountStatus.rawValue))")
+                return false
+            }
         } catch {
             logger.error("CloudKit availability check failed: \(error)")
             return false
