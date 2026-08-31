@@ -9,6 +9,9 @@ import SwiftData
 import OSLog
 
 public actor Percy {
+    
+    public static let defaultStoreURL: URL = URL.documentsDirectory.appending(path: "PercyStore").appending(path: "percy.store")
+    
     /// A container that manages the persistence, backup, cloud sync, and migration of your SwiftData models.
     ///
     /// `Percy.Container` provides a centralized way to manage your app's data persistence needs.
@@ -72,7 +75,6 @@ public actor Percy {
         private let migration: MigrationManager
         private let analytics: Analytics
         
-        public static let defaultStoreURL: URL = URL.documentsDirectory.appending(path: "PercyStore").appending(path: "percy.store")
 
         /// Creates a new Percy container with the specified configuration.
         ///
@@ -93,7 +95,7 @@ public actor Percy {
                 try? FileManager.default.createDirectory(at: storeDirectory, withIntermediateDirectories: true, attributes: nil)
                 self.storeURL = storeDirectory.appending(path: "percy.store")
             } else {
-                self.storeURL = Self.defaultStoreURL
+                self.storeURL = Percy.defaultStoreURL
             }
             self.logger.debug("Store URL: \(self.storeURL)")
             // Initialize components
