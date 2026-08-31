@@ -71,6 +71,8 @@ public actor Percy {
         private let cloud: CloudManager
         private let migration: MigrationManager
         private let analytics: Analytics
+        
+        public static let defaultStoreURL: URL = URL.documentsDirectory.appending(path: "PercyStore").appending(path: "percy.store")
 
         /// Creates a new Percy container with the specified configuration.
         ///
@@ -91,7 +93,7 @@ public actor Percy {
                 try? FileManager.default.createDirectory(at: storeDirectory, withIntermediateDirectories: true, attributes: nil)
                 self.storeURL = storeDirectory.appending(path: "percy.store")
             } else {
-                self.storeURL = URL.documentsDirectory.appending(path: "PercyStore").appending(path: "percy.store")
+                self.storeURL = Self.defaultStoreURL
             }
             self.logger.debug("Store URL: \(self.storeURL)")
             // Initialize components
